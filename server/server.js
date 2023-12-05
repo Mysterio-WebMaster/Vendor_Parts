@@ -3,7 +3,6 @@ var app = express();
 var { MongoClient, ServerApiVersion } = require('mongodb');
 var cors = require('cors');
 var bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 
 var port = 5000;
 // var port = 8080;
@@ -27,7 +26,7 @@ async function Connection(uri) {
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log("Successfully connected to MongoDB!");
 
     return { status: 201, client: client, };
   } catch (error) {
@@ -41,7 +40,28 @@ app.post("/connect", async (req, res) => {
   res.json({ status: result.status })
 })
 
+app.get("/databases", async (req, res) => {
+  let { uri } = req.query
+  console.log(uri);
+  let result = await Connection(uri)
+
+
+
+  if (result.status !== 201)
+    res.json({ status: result.status, message: result.client })
+
+  console.log(result.status)
+  let client = result.client
+
+  let databasesList = await client.db().admin().listDatabases();
+  // databasesList.databases.forEach(db => console.log(`${db.name}`));
+
+  res.json({ status: 201, databasesList })
+
+
+})
+
 
 app.listen(port, () => {
-  console.log("Server is running on port: " + port);
+  console.log("Server is running on port " + port);
 })
